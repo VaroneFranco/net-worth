@@ -6,12 +6,14 @@ import { Icon, PALETTE } from './ui.jsx'
 import HoldingSheet from './HoldingSheet.jsx'
 import SettingsSheet from './SettingsSheet.jsx'
 import ImportSheet from './ImportSheet.jsx'
+import HistoryView from './HistoryView.jsx'
 
 export default function App() {
   const [state, setState] = useState(load)
   const [market, setMarket] = useState(loadQuotes) // { rates, ars, quotes, errors, at }
   const [loading, setLoading] = useState(false)
   const [sheet, setSheet] = useState(null)
+  const [view, setView] = useState('home')
   const [, tick] = useState(0)
   const { holdings, settings } = state
 
@@ -65,7 +67,7 @@ export default function App() {
   const startY = useRef(null)
   useEffect(() => {
     const onStart = (e) => {
-      if (sheet || window.scrollY > 0) return
+      if (sheet || view !== 'home' || window.scrollY > 0) return
       startY.current = e.touches[0].clientY
     }
     const onMove = (e) => {
@@ -88,7 +90,7 @@ export default function App() {
       window.removeEventListener('touchmove', onMove)
       window.removeEventListener('touchend', onEnd)
     }
-  }, [refresh, sheet])
+  }, [refresh, sheet, view])
 
   // ---- cálculos ----
   const rates = market?.rates || { USD: 1 }
@@ -152,6 +154,13 @@ export default function App() {
 
   const errors = market?.errors || []
 
+  if (view === 'history') {
+    return (
+      <HistoryView holdings={holdings} settings={settings} market={market} setSettings={setSettings}
+        onBack={() => { setView('home'); window.scrollTo(0, 0) }} />
+    )
+  }
+
   return (
     <div className="app">
       <div className="ptr" style={{ height: loading && !pull ? 0 : pull, opacity: pull / 60 }}>
@@ -166,6 +175,11 @@ export default function App() {
           </p>
         </div>
         <div className="top-actions">
+          {holdings.length > 0 && (
+            <button className="icon-btn" onClick={() => { setView('history'); window.scrollTo(0, 0) }} aria-label="Historial">
+              <Icon name="chart" />
+            </button>
+          )}
           <button className="icon-btn" onClick={() => setSettings({ hidden: !hide })} aria-label={hide ? 'Mostrar montos' : 'Ocultar montos'}>
             <Icon name={hide ? 'eyeOff' : 'eye'} />
           </button>

@@ -198,3 +198,20 @@ h1, h2, p { margin: 0; }
 .row.static { cursor: default; }
 .row.static:active { background: transparent; }
 .empty .btn { min-width: 240px; }
+
+/* historial */
+.top-title { font-size: 18px !important; }
+.presets { margin-top: 0; }
+.custom-range { margin-top: 12px; }
+.chart-card { margin-top: 14px; }
+.chart-card .total { margin-top: 2px; }
+.ccy { margin-top: 10px; }
+.chart-wrap { margin: 14px -4px 0; min-height: 220px; transition: opacity .2s; }
+.chart-wrap.loading { opacity: .45; }
+.chart { touch-action: pan-y; user-select: none; -webkit-user-select: none; }
+.chart svg { display: block; overflow: visible; }
+.chart .grid { stroke: var(--line); stroke-width: 1; }
+.chart .axis { fill: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; }
+.chart .crosshair { stroke: var(--muted); stroke-width: 1; stroke-dasharray: 3 3; }
+.chart-empty { height: 220px; display: grid; place-items: center; text-align: center; padding: 0 24px; }
+.note { margin: 14px 4px 0; }
