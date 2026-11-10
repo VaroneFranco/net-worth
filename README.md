@@ -10,6 +10,7 @@ Es una PWA: se instala desde Safari con **Compartir → Agregar a pantalla de in
 - Muestra el valor de cada tenencia, el total por plataforma o por tipo, y el total general en USD, ARS u otra moneda.
 - Actualiza al abrir la app, al volver a ella y al deslizar hacia abajo.
 - Plataformas, tipos de bien y monedas se pueden agregar desde Ajustes.
+- Importa el reporte de cartera CSV de Cocos Capital (reemplaza las tenencias de Cocos en cada importación).
 - Exporta e importa una copia de seguridad en JSON.
 
 ## Fuentes de cotización (gratis, sin clave)

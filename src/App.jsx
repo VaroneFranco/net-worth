@@ -5,6 +5,7 @@ import { money, units as fmtUnits, pct, ago } from './format.js'
 import { Icon, PALETTE } from './ui.jsx'
 import HoldingSheet from './HoldingSheet.jsx'
 import SettingsSheet from './SettingsSheet.jsx'
+import ImportSheet from './ImportSheet.jsx'
 
 export default function App() {
   const [state, setState] = useState(load)
@@ -137,6 +138,13 @@ export default function App() {
     })
     setSheet(null)
   }
+  const importPlatform = (platform, imported) => {
+    update((s) => ({
+      holdings: [...s.holdings.filter((x) => x.platform !== platform), ...imported],
+      settings: s.settings.platforms.includes(platform) ? s.settings : { ...s.settings, platforms: [...s.settings.platforms, platform] },
+    }))
+    setSheet(null)
+  }
   const deleteHolding = (id) => {
     update((s) => ({ ...s, holdings: s.holdings.filter((x) => x.id !== id) }))
     setSheet(null)
@@ -203,6 +211,7 @@ export default function App() {
           <h2>Empezá cargando lo que tenés</h2>
           <p className="muted">Elegí el instrumento, poné cuántas unidades tenés y dónde están. La app busca el precio y suma todo.</p>
           <button className="btn primary" onClick={() => setSheet({ kind: 'holding' })}>Agregar tenencia</button>
+          <button className="btn" onClick={() => setSheet({ kind: 'import' })}>Importar de Cocos Capital</button>
         </section>
       ) : (
         <>
@@ -239,7 +248,7 @@ export default function App() {
                   <li key={h.id}>
                     <button className="row" onClick={() => setSheet({ kind: 'holding', holding: h })}>
                       <div className="row-main">
-                        <span className="sym">{h.symbol || h.name}</span>
+                        <span className="sym">{h.source === 'cash' ? h.name || h.symbol : h.symbol || h.name}</span>
                         <span className="muted small ellipsis">
                           {hide ? '•••' : fmtUnits(h.units)}
                           {h.source !== 'cash' && q?.nativePrice != null && !hide && ` × ${money(q.nativePrice * (h.per || 1), q.nativeCur)}${h.per > 1 ? ` c/${h.per}` : ''}`}
@@ -252,7 +261,8 @@ export default function App() {
                         ) : (
                           <>
                             <span className="num">{m(toDisp(usd), disp, { compact: true })}</span>
-                            {q?.change != null && (
+                            {q?.stale && <span className="small muted">precio del archivo</span>}
+                            {!q?.stale && q?.change != null && (
                               <span className={`small ${q.change >= 0 ? 'up-t' : 'down-t'}`}>{pct(q.change)}</span>
                             )}
                           </>
@@ -286,14 +296,19 @@ export default function App() {
           onSave={saveHolding}
           onDelete={deleteHolding}
           onAddOption={(key, value) => setSettings({ [key]: [...settings[key], value] })}
+          onOpenImport={() => setSheet({ kind: 'import' })}
           onClose={() => setSheet(null)}
         />
+      )}
+      {sheet?.kind === 'import' && (
+        <ImportSheet existing={holdings} onImport={importPlatform} onClose={() => setSheet(null)} />
       )}
       {sheet?.kind === 'settings' && (
         <SettingsSheet
           state={state}
           market={market}
           setSettings={setSettings}
+          onOpenImport={() => setSheet({ kind: 'import' })}
           replaceState={(s) => setState(s)}
           onClose={() => setSheet(null)}
         />

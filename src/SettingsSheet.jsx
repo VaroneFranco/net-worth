@@ -33,7 +33,7 @@ function ListEditor({ label, items, onChange, upper, placeholder, locked = [] })
   )
 }
 
-export default function SettingsSheet({ state, market, setSettings, replaceState, onClose }) {
+export default function SettingsSheet({ state, market, setSettings, replaceState, onOpenImport, onClose }) {
   const { settings } = state
   const fileRef = useRef(null)
   const [msg, setMsg] = useState('')
@@ -79,6 +79,11 @@ export default function SettingsSheet({ state, market, setSettings, replaceState
           onChange={(platforms) => setSettings({ platforms })} />
         <ListEditor label="Tipos de bien" items={settings.types} placeholder="Ej. Inmuebles"
           onChange={(types) => setSettings({ types })} />
+
+        <div className="field">
+          <span className="field-label">Importar desde brokers</span>
+          <button className="btn" onClick={onOpenImport}>Importar reporte de Cocos Capital</button>
+        </div>
 
         <div className="field">
           <span className="field-label">Copia de seguridad</span>

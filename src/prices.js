@@ -184,6 +184,7 @@ export async function fetchAll(holdings, settings) {
     let cur = 'USD'
     let change = null
     let err = null
+    let stale = false
     switch (h.source) {
       case 'crypto': {
         const p = crypto.status === 'fulfilled' ? crypto.value[h.ref] : null
@@ -198,6 +199,11 @@ export async function fetchAll(holdings, settings) {
           price = row.price / (h.per || 1)
           cur = h.source === 'us' ? 'USD' : h.quote || 'ARS'
           change = row.change
+        } else if (h.fallbackPrice != null) {
+          // precio del último archivo importado, mientras no haya cotización en vivo
+          price = h.fallbackPrice / (h.per || 1)
+          cur = h.fallbackCur || 'ARS'
+          stale = true
         } else err = 'Sin cotización'
         break
       }
@@ -216,7 +222,7 @@ export async function fetchAll(holdings, settings) {
     }
     const usdPrice = price != null ? toUsd(price, cur) : null
     if (price != null && usdPrice == null) err = `Sin tipo de cambio ${cur}`
-    quotes[h.id] = { usdPrice, nativePrice: price, nativeCur: cur, change, error: err }
+    quotes[h.id] = { usdPrice, nativePrice: price, nativeCur: cur, change, error: err, stale }
   }
   return { rates, ars, quotes, errors, at: Date.now() }
 }

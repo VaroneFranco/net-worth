@@ -9,7 +9,7 @@ import { money, parseNum, pct } from './format.js'
 
 const COMMON_FIAT = ['USD', 'ARS', 'EUR', 'BRL', 'GBP', 'CHF', 'JPY', 'CLP', 'UYU', 'MXN']
 
-export default function HoldingSheet({ holding, settings, quote, rates, onSave, onDelete, onAddOption, onClose }) {
+export default function HoldingSheet({ holding, settings, quote, rates, onSave, onDelete, onAddOption, onOpenImport, onClose }) {
   const editing = !!holding
   const [step, setStep] = useState(editing ? 'details' : 'source')
   const [draft, setDraft] = useState(holding || {})
@@ -39,6 +39,16 @@ export default function HoldingSheet({ holding, settings, quote, rates, onSave, 
     <Sheet title={title} onClose={onClose} onBack={onBack}
       footer={step === 'details' && <DetailsFooter draft={draft} editing={editing} onSave={onSave} onDelete={onDelete} />}>
       {step === 'source' && (
+        <>
+        <ul className="options">
+          <li>
+            <button className="option" onClick={onOpenImport}>
+              <span><strong>Importar de Cocos Capital</strong><span className="muted small">Cargá el reporte de cartera en CSV</span></span>
+              <Icon name="chevron" />
+            </button>
+          </li>
+        </ul>
+        <p className="field-label" style={{ margin: '18px 4px 8px' }}>O agregá una tenencia a mano</p>
         <ul className="options">
           {Object.entries(SOURCES).map(([k, s]) => (
             <li key={k}>
@@ -49,6 +59,7 @@ export default function HoldingSheet({ holding, settings, quote, rates, onSave, 
             </li>
           ))}
         </ul>
+        </>
       )}
       {step === 'pick' && draft.source === 'crypto' && <CryptoPicker onPick={pick} />}
       {step === 'pick' && (draft.source === 'ar' || draft.source === 'us') && (

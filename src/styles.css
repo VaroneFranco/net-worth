@@ -194,3 +194,7 @@ h1, h2, p { margin: 0; }
 .inline-form input { flex: 1; min-width: 0; }
 .preview { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 14px; display: flex; flex-direction: column; gap: 2px; }
 .preview strong { font-size: 22px; font-variant-numeric: tabular-nums; }
+
+.row.static { cursor: default; }
+.row.static:active { background: transparent; }
+.empty .btn { min-width: 240px; }
