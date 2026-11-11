@@ -4,6 +4,7 @@ import { ARS_RATES } from './prices.js'
 import { DEFAULT_SETTINGS } from './store.js'
 import { money } from './format.js'
 import { buildWidgetScript } from './widget.js'
+import { buildHistory, isoDay } from './history.js'
 
 function ListEditor({ label, items, onChange, upper, placeholder, locked = [] }) {
   const [text, setText] = useState('')
@@ -86,7 +87,7 @@ export default function SettingsSheet({ state, market, setSettings, replaceState
           <button className="btn" onClick={onOpenImport}>Importar reporte de Cocos Capital</button>
         </div>
 
-        <WidgetSection state={state} />
+        <WidgetSection state={state} market={market} />
 
         <div className="field">
           <span className="field-label">Copia de seguridad</span>
@@ -108,18 +109,41 @@ export default function SettingsSheet({ state, market, setSettings, replaceState
   )
 }
 
-function WidgetSection({ state }) {
+function WidgetSection({ state, market }) {
   const [status, setStatus] = useState('')
   const [fallback, setFallback] = useState('')
-  const copy = async () => {
-    const script = buildWidgetScript(state.holdings, state.settings, location.origin + location.pathname)
+
+  // Arma el script con los últimos 35 días de historia para que 7d/30d funcionen desde el primer día.
+  const makeScript = async () => {
+    let seed = {}
     try {
-      await navigator.clipboard.writeText(script)
-      setStatus('Script copiado.')
-      setFallback('')
+      const to = isoDay(Date.now())
+      const from = isoDay(Date.now() - 35 * 86400000)
+      const h = await buildHistory(state.holdings, {
+        from, to, casa: state.settings.arsRate, quotes: market?.quotes, rates: market?.rates,
+      })
+      h.days.forEach((d, i) => { if (d !== to && h.usd[i] > 0) seed[d] = Math.round(h.usd[i] * 100) / 100 })
+    } catch { seed = {} }
+    return buildWidgetScript(state.holdings, state.settings, location.origin + location.pathname, seed)
+  }
+
+  const copy = async () => {
+    setStatus('Preparando…')
+    setFallback('')
+    const pending = makeScript()
+    try {
+      // Safari exige copiar dentro del toque: se pasa la promesa directamente al portapapeles.
+      if (window.ClipboardItem && navigator.clipboard?.write) {
+        await navigator.clipboard.write([new ClipboardItem({
+          'text/plain': pending.then((t) => new Blob([t], { type: 'text/plain' })),
+        })])
+      } else {
+        await navigator.clipboard.writeText(await pending)
+      }
+      setStatus('Script copiado. Pegalo en Scriptable.')
     } catch {
       setStatus('No se pudo copiar automáticamente. Mantené apretado el texto de abajo, tocá "Seleccionar todo" y copialo.')
-      setFallback(script)
+      setFallback(await pending)
     }
   }
   return (
@@ -129,7 +153,7 @@ function WidgetSection({ state }) {
         <li>Instalá <strong>Scriptable</strong> desde el App Store.</li>
         <li>Tocá "Copiar script del widget".</li>
         <li>En Scriptable tocá <strong>+</strong>, pegá el script y renombralo "Patrimonio".</li>
-        <li>En la pantalla de inicio mantené apretado, tocá <strong>Editar → Agregar widget</strong>, elegí Scriptable (tamaño chico) y agregalo. Después tocalo y en Script elegí "Patrimonio".</li>
+        <li>En la pantalla de inicio mantené apretado, tocá <strong>Editar → Agregar widget</strong>, elegí Scriptable en tamaño <strong>mediano</strong> (total, resultado de hoy, 7 y 30 días y dólar) o chico (solo total y hoy). Después mantenelo apretado → Editar widget y en Script elegí "Patrimonio".</li>
       </ol>
       <button className="btn" onClick={copy}>Copiar script del widget</button>
       {status && <p className="small">{status}</p>}

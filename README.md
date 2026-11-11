@@ -11,7 +11,7 @@ Es una PWA: se instala desde Safari con **Compartir → Agregar a pantalla de in
 - Actualiza al abrir la app, al volver a ella y al deslizar hacia abajo.
 - Plataformas, tipos de bien y monedas se pueden agregar desde Ajustes.
 - Historial: gráfico de cuánto valían las tenencias actuales en cada fecha, con presets (1S, 1M, 3M, 6M, este año, 1A, 2A) y rango personalizado.
-- Widget de iPhone vía Scriptable: Ajustes → "Copiar script del widget".
+- Widget de iPhone vía Scriptable (Ajustes → "Copiar script del widget"): chico con total y resultado del día; mediano con total, resultado de hoy, 7 y 30 días y dólar.
 - Importa el reporte de cartera CSV de Cocos Capital (reemplaza las tenencias de Cocos en cada importación).
 - Exporta e importa una copia de seguridad en JSON.
 
