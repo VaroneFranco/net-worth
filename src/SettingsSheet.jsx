@@ -3,6 +3,7 @@ import { Sheet, Icon } from './ui.jsx'
 import { ARS_RATES } from './prices.js'
 import { DEFAULT_SETTINGS } from './store.js'
 import { money } from './format.js'
+import { buildWidgetScript } from './widget.js'
 
 function ListEditor({ label, items, onChange, upper, placeholder, locked = [] }) {
   const [text, setText] = useState('')
@@ -85,6 +86,8 @@ export default function SettingsSheet({ state, market, setSettings, replaceState
           <button className="btn" onClick={onOpenImport}>Importar reporte de Cocos Capital</button>
         </div>
 
+        <WidgetSection state={state} />
+
         <div className="field">
           <span className="field-label">Copia de seguridad</span>
           <p className="muted small">Tus datos viven solo en este teléfono. Exportá un archivo de vez en cuando por si borrás Safari.</p>
@@ -102,5 +105,36 @@ export default function SettingsSheet({ state, market, setSettings, replaceState
         </p>
       </div>
     </Sheet>
+  )
+}
+
+function WidgetSection({ state }) {
+  const [status, setStatus] = useState('')
+  const [fallback, setFallback] = useState('')
+  const copy = async () => {
+    const script = buildWidgetScript(state.holdings, state.settings, location.origin + location.pathname)
+    try {
+      await navigator.clipboard.writeText(script)
+      setStatus('Script copiado.')
+      setFallback('')
+    } catch {
+      setStatus('No se pudo copiar automáticamente. Mantené apretado el texto de abajo, tocá "Seleccionar todo" y copialo.')
+      setFallback(script)
+    }
+  }
+  return (
+    <div className="field">
+      <span className="field-label">Widget de iPhone</span>
+      <ol className="steps muted small">
+        <li>Instalá <strong>Scriptable</strong> desde el App Store.</li>
+        <li>Tocá "Copiar script del widget".</li>
+        <li>En Scriptable tocá <strong>+</strong>, pegá el script y renombralo "Patrimonio".</li>
+        <li>En la pantalla de inicio mantené apretado, tocá <strong>Editar → Agregar widget</strong>, elegí Scriptable (tamaño chico) y agregalo. Después tocalo y en Script elegí "Patrimonio".</li>
+      </ol>
+      <button className="btn" onClick={copy}>Copiar script del widget</button>
+      {status && <p className="small">{status}</p>}
+      {fallback && <textarea className="script-box" readOnly value={fallback} onFocus={(e) => e.target.select()} />}
+      <p className="muted small">El widget lleva una copia de tus tenencias. Si las cambiás (por ejemplo, al reimportar Cocos), volvé a copiar el script y reemplazalo en Scriptable.</p>
+    </div>
   )
 }
